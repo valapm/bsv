@@ -488,16 +488,6 @@ describe('Transaction', function () {
         return transaction.serialize()
       }).to.throw(errors.Transaction.FeeError.TooLarge)
     })
-    it('fails if a dust output is created', function () {
-      var transaction = new Transaction()
-        .from(simpleUtxoWith1BSV)
-        .to(toAddress, 545)
-        .change(changeAddress)
-        .sign(privateKey)
-      expect(function () {
-        return transaction.serialize()
-      }).to.throw(errors.Transaction.DustOutputs)
-    })
     it('doesn\'t fail if a dust output is not dust', function () {
       var transaction = new Transaction()
         .from(simpleUtxoWith1BSV)
@@ -579,14 +569,6 @@ describe('Transaction', function () {
             .change(changeAddress)
             .sign(privateKey)
         }, 'disableLargeFees', errors.Transaction.FeeError.TooLarge
-      ))
-      it('can skip the check that prevents dust outputs', buildSkipTest(
-        function (transaction) {
-          return transaction
-            .to(toAddress, 100)
-            .change(changeAddress)
-            .sign(privateKey)
-        }, 'disableDustOutputs', errors.Transaction.DustOutputs
       ))
       it('can skip the check that prevents unsigned outputs', buildSkipTest(
         function (transaction) {
