@@ -14,7 +14,7 @@ declare module "bsv" {
     class BN {}
 
     namespace ECDSA {
-      function sign(message: Buffer, key: PrivateKey): Signature
+      function sign(hashbuf: Buffer, privkey: PrivateKey, endian: string): Signature
       function verify(hashbuf: Buffer, sig: Signature, pubkey: PublicKey, endian?: "little"): boolean
     }
 
@@ -39,8 +39,20 @@ declare module "bsv" {
     class Signature {
       static fromDER(sig: Buffer): Signature
       static fromString(data: string): Signature
-      SIGHASH_ALL: number
+      static SIGHASH_ALL: number
+      static SIGHASH_SINGLE: number
+      static SIGHASH_FORKID: number
+      static SIGHASH_ANYONECANPAY: number
       toString(): string
+      set(obj: object): Signature
+      toTxFormat(): Buffer
+    }
+  }
+
+  export namespace encoding {
+    class BufferReader {
+      constructor(buf: string | Buffer)
+      readReverse(len?: number): Buffer
     }
   }
 
@@ -60,11 +72,23 @@ declare module "bsv" {
       inspect(): string
       toObject(): this
       toString(): string
+      fromString(string: string): void
+    }
+
+    namespace sighash {
+      function sighashPreimage(
+        transaction: Transaction,
+        sighashType: number,
+        inputNumber: number,
+        subscript: Script,
+        satoshisBN: BN,
+        flags?: number
+      ): Buffer
     }
 
     class Output {
       readonly script: Script
-      readonly satoshis: number
+      satoshis: number
       readonly satoshisBN: crypto.BN
       spentTxId: string | null
       constructor(data: object)
@@ -80,11 +104,33 @@ declare module "bsv" {
       readonly sequenceNumber: number
       readonly script: Script
       output?: Output
+
+      constructor(
+        data: { prevTxId: string; outputIndex: number; script: Script; output?: Output },
+        lockingScript?: bsv.Script,
+        prevSats?: number
+      )
+
+      static fromObject(data: { prevTxId: string; outputIndex: number; script: Script; output?: Output }): Input
+
+      setScript(script: Script): Input
       isValidSignature(tx: Transaction, sig: any): boolean
+      isFullySigned(): boolean
+
+      getSignatures(
+        transaction: Transaction,
+        privateKey: PrivateKey,
+        index: number,
+        sigtype?: number
+      ): crypto.Signature[]
+      addSignature(transaction: Transaction, signature: crypto.Signature): Input
+      clearSignatures(): void
     }
   }
 
   export class Transaction {
+    static DUST_AMOUNT: number
+
     inputs: Transaction.Input[]
     outputs: Transaction.Output[]
     readonly id: string
@@ -102,7 +148,7 @@ declare module "bsv" {
     feePerKb(amount: number): this
     sign(privateKey: PrivateKey | string): this
     applySignature(sig: crypto.Signature): this
-    addInput(input: Transaction.Input): this
+    addInput(input: Transaction.Input, script?: bsv.Script, satoshis?: number): this
     addOutput(output: Transaction.Output): this
     addData(value: Buffer | string): this
     lockUntilDate(time: Date | number): this
@@ -114,6 +160,7 @@ declare module "bsv" {
     getLockTime(): Date | number
 
     verify(): string | boolean
+    getSerializationError(): Error | void
     isCoinbase(): boolean
 
     enableRBF(): this
@@ -321,20 +368,35 @@ declare module "bsv" {
     function buildPublicKeyHashIn(publicKey: PublicKey, signature: crypto.Signature | Buffer, sigtype: number): Script
 
     function fromAddress(address: string | Address): Script
+    function fromASM(str: string): Script
 
     function empty(): Script
     namespace Interpreter {
       const SCRIPT_ENABLE_SIGHASH_FORKID: any
+      const SCRIPT_ENABLE_MAGNETIC_OPCODES: any
+      const SCRIPT_ENABLE_MONOLITH_OPCODES: any
+      const SCRIPT_VERIFY_STRICTENC: any
+      const SCRIPT_VERIFY_LOW_S: any
+      const SCRIPT_VERIFY_NULLFAIL: any
+      const SCRIPT_VERIFY_DERSIG: any
+      const SCRIPT_VERIFY_MINIMALDATA: any
+      const SCRIPT_VERIFY_NULLDUMMY: any
+      const SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS: any
+      const SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY: any
+      const SCRIPT_VERIFY_CHECKSEQUENCEVERIFY: any
     }
 
     function Interpreter(): {
+      errstr: string
+      stack: any[]
+
       verify: (
         inputScript: Script,
         outputScript: Script,
         txn: Transaction,
-        nin: Number,
-        flags: any,
-        satoshisBN: crypto.BN
+        nin?: number,
+        flags?: any,
+        satoshisBN?: crypto.BN
       ) => boolean
     }
   }
@@ -419,7 +481,13 @@ declare module "bsv" {
     readonly network: Networks.Network
     readonly type: string
 
+    static fromString(hex: string): Address
+    static fromHex(hex: string): Address
+
     constructor(data: Buffer | Uint8Array | string | object, network?: Networks.Network | string, type?: string)
+
+    toString(): string
+    toHex(): string
   }
 
   export class Unit {
