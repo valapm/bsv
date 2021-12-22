@@ -72,7 +72,6 @@ declare module "bsv" {
       inspect(): string
       toObject(): this
       toString(): string
-      fromString(string: string): void
     }
 
     namespace sighash {
@@ -142,6 +141,7 @@ declare module "bsv" {
     constructor(serialized?: any)
 
     from(utxos: Transaction.UnspentOutput | Transaction.UnspentOutput[]): this
+    fromString(string: string): this
     to(address: Address[] | Address | string, amount: number): this
     change(address: Address | string): this
     fee(amount: number): this
