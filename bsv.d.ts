@@ -174,6 +174,10 @@ declare module "bsv" {
 
     verify(): boolean | string
     isFullySigned(): boolean
+
+    _updateChangeOutput(): void
+
+    _outputAmount: number
   }
 
   export class ECIES {
