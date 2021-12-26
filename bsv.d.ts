@@ -177,7 +177,7 @@ declare module "bsv" {
 
     _updateChangeOutput(): void
 
-    _outputAmount: number
+    _outputAmount?: number
   }
 
   export class ECIES {
