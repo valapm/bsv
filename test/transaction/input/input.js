@@ -2,10 +2,10 @@
 
 var should = require('chai').should()
 var expect = require('chai').expect
-var _ = require('../../../lib/util/_')
+// var _ = require('../../../lib/util/_')
 
 var bsv = require('../../..')
-var errors = bsv.errors
+// var errors = bsv.errors
 var PrivateKey = bsv.PrivateKey
 var Address = bsv.Address
 var Script = bsv.Script
@@ -36,14 +36,14 @@ describe('Transaction.Input', function () {
     script: ''
   })
 
-  it('has abstract methods: "getSignatures", "isFullySigned", "addSignature", "clearSignatures"', function () {
-    var input = new Input(output)
-    _.each(['getSignatures', 'isFullySigned', 'addSignature', 'clearSignatures'], function (method) {
-      expect(function () {
-        return input[method]()
-      }).to.throw(errors.AbstractMethodInvoked)
-    })
-  })
+  // it('has abstract methods: "getSignatures", "isFullySigned", "addSignature", "clearSignatures"', function () {
+  //   var input = new Input(output)
+  //   _.each(['getSignatures', 'isFullySigned', 'addSignature', 'clearSignatures'], function (method) {
+  //     expect(function () {
+  //       return input[method]()
+  //     }).to.throw(errors.AbstractMethodInvoked)
+  //   })
+  // })
   it('detects coinbase transactions', function () {
     new Input(output).isNull().should.equal(false)
     var ci = new Input(coinbase)
