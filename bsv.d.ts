@@ -408,6 +408,8 @@ declare module "bsv" {
   export class Script {
     constructor(data: string | object)
 
+    chunks: any[]
+
     set(obj: object): this
 
     toBuffer(): Buffer
