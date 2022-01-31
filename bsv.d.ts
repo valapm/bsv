@@ -168,6 +168,7 @@ declare module "bsv" {
 
     inspect(): string
     serialize(): string
+    uncheckedSerialize(): string
 
     toObject(): any
     toBuffer(): Buffer
