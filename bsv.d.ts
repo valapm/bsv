@@ -167,8 +167,9 @@ declare module "bsv" {
     isRBF(): boolean
 
     inspect(): string
-    serialize(): string
+    serialize(opts: any): string
     uncheckedSerialize(): string
+    checkedSerialize(opts: any): string
 
     toObject(): any
     toBuffer(): Buffer
