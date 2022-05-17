@@ -168,7 +168,7 @@ declare module "bsv" {
     isRBF(): boolean
 
     inspect(): string
-    serialize(opts: any): string
+    serialize(opts?: any): string
     uncheckedSerialize(): string
     checkedSerialize(opts: any): string
 
@@ -179,6 +179,7 @@ declare module "bsv" {
     isFullySigned(): boolean
 
     _updateChangeOutput(): void
+    _estimateSize(): number
 
     _outputAmount?: number
   }
